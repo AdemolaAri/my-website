@@ -27,19 +27,20 @@ const projects = (await getCollection('work'))
 		<div class="wrapper stack gap-8 lg:gap-20">
 			<header class="hero">
 				<Hero
-					title="Hello, my name is Jeanine White"
-					tagline="I am a Creative Developer who is currently based in Portland, Oregon."
+					title="Hello, my name is Ademola Arigbabuwo"
+					tagline="I am a Software Developer who is currently based in Chicago, Illinois."
 					align="start"
 				>
 					<div class="roles">
 						<Pill><Icon icon="code" size="1.33em" /> Developer</Pill>
+						<Pill><Icon icon="codepen-logo" size="1.33em" /> AI Engineer</Pill>
 						<Pill><Icon icon="microphone-stage" size="1.33em" /> Speaker</Pill>
 						<Pill><Icon icon="pencil-line" size="1.33em" /> Writer</Pill>
 					</div>
 				</Hero>
 
 				<img
-					alt="Jeanine White smiling in a red plaid shirt and tortoise shell glasses"
+					alt="Ademola Arigbabuwo smiling shirt and black tie in front of a white background"
 					width="480"
 					height="620"
 					src="/assets/portrait.jpg"
@@ -52,11 +53,11 @@ const projects = (await getCollection('work'))
 		<main class="wrapper stack gap-20 lg:gap-48">
 			<section class="section with-background with-cta">
 				<header class="section-header stack gap-2 lg:gap-4">
-					<h3>Selected Work</h3>
-					<p>Take a look below at some of my featured work for clients from the past few years.</p>
+					<h3>Latest</h3>
+					<p>Take a look below at some of my latest work.</p>
 				</header>
 
-				<div class="gallery">
+				<!-- <div class="gallery">
 					<Grid variant="offset">
 						{
 							projects.map((project) => (
@@ -66,7 +67,7 @@ const projects = (await getCollection('work'))
 							))
 						}
 					</Grid>
-				</div>
+				</div> -->
 
 				<div class="cta">
 					<CallToAction href="/work/">
@@ -76,7 +77,7 @@ const projects = (await getCollection('work'))
 				</div>
 			</section>
 
-			<section class="section with-background bg-variant">
+			<!-- <section class="section with-background bg-variant">
 				<header class="section-header stack gap-2 lg:gap-4">
 					<h3>Mentions</h3>
 					<p>
@@ -96,7 +97,7 @@ const projects = (await getCollection('work'))
 						}
 					</Grid>
 				</div>
-			</section>
+			</section> -->
 		</main>
 
 		<ContactCTA />
