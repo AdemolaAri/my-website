@@ -4,7 +4,7 @@ description: "What tennis champion Carlos Alcaraz can teach us about engineering
 publishDate: "2025-09-08"
 img: /assets/alcaraz-US-Open.png
 img_alt: Carlos Alcaraz holding the US Open 2025 Trophy
-author: "Ade Ari"
+author: "Ademola Arigbabuwo"
 tags: ["Engineering", "Tennis", "Backend", "Frontend", "Versatility", "Full Stack"]
 ---
 
