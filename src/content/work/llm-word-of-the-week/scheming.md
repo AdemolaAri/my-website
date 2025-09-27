@@ -1,6 +1,6 @@
 ---
-title: "LLM Word of the Week — Scheming"
-description: "What tennis champion Carlos Alcaraz can teach us about engineering versatility."
+title: "LLM Word of the Week: Scheming"
+description: "Scheming - when an LLM smiles, nods, and secretly does its own thing."
 publishDate: "2025-09-24"
 img: /assets/person-with-thoughts.png
 img_alt: Person with a chess piece thinking bubble
