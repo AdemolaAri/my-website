@@ -55,3 +55,5 @@ Plain LLMs are limited by their training cutoff and internal weights. With RAG:
 
 ## Final thought  
 RAG bridges memory and reasoning: it lets models say, “I don’t know, but I’ll find the answer.” In doing so, it significantly reduces the burden on models to internalize everything, while giving them grounded context to reason from.    
+
+See this notebook for an example implementation of RAG: https://www.kaggle.com/code/princedemo/using-rag-to-improve-prompt-response
