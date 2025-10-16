@@ -1,0 +1,156 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout>
+  <main class="wrapper stack gap-8">
+    <header class="section-header">
+      <h1>Play with a simple tokenizer</h1>
+      <p>Type up to 50 characters and watch your text break into colorful tokens — just for fun.</p>
+    </header>
+
+    <section class="tokenizer-card">
+      <label for="token-input">Enter text (50 char max)</label>
+
+      <div class="tokenizer-controls">
+        <div class="option">
+          <input type="radio" id="bpe" name="tokenizer" value="bpe" checked />
+          <label for="bpe">BPE-like (GPT-style)</label>
+          <div class="hint">Greedy subword merges; splits common suffixes/prefixes.</div>
+        </div>
+        <div class="option">
+          <input type="radio" id="unigram" name="tokenizer" value="unigram" />
+          <label for="unigram">Unigram-like (SentencePiece-ish)</label>
+          <div class="hint">Probabilistic subwords; often prefers shorter, frequent units.</div>
+        </div>
+      </div>
+
+      <input id="token-input" maxlength="50" placeholder="Type here..." />
+
+      <div id="token-display" aria-live="polite" class="token-row"></div>
+      <div id="token-count">Token Count: 0</div>
+    </section>
+  </main>
+
+  <style>
+    .tokenizer-card { max-width: 58ch; padding: 1.5rem; border-radius: 1rem; background: linear-gradient(180deg, rgba(255,255,255,0.03), transparent); box-shadow: var(--shadow-sm); }
+    label { display: block; margin-bottom: 0.5rem; color: var(--gray-300); }
+    #token-input { width: 100%; padding: 0.75rem 1rem; border-radius: 0.75rem; border: 1px solid var(--gray-800); background: var(--bg-image-main); color: inherit; }
+    .token-row { margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .token { padding: 6px 10px; border-radius: 999px; font-weight: 700; }
+    #token-count { margin-top: 0.75rem; color: var(--gray-300); }
+    .tokenizer-controls { display:flex; gap:1rem; margin:0.5rem 0 0.75rem 0; }
+    .tokenizer-controls .option { position:relative; display:flex; align-items:center; gap:0.5rem; }
+    .tokenizer-controls input[type="radio"] { accent-color: var(--accent); }
+    .tokenizer-controls .hint { display:none; position:absolute; top:2.25rem; left:0; background:var(--gray-900); color:var(--gray-200); padding:0.6rem; border-radius:0.5rem; width:20rem; font-size:0.9rem; box-shadow:var(--shadow-sm); }
+    .tokenizer-controls .option:hover .hint { display:block; }
+  </style>
+
+  <script>
+    const input = document.getElementById('token-input');
+    const display = document.getElementById('token-display');
+    const count = document.getElementById('token-count');
+    const radios = Array.from(document.querySelectorAll('input[name="tokenizer"]'));
+
+    function hashColor(s) {
+      let h = 0;
+      for (let i = 0; i < s.length; i++) h = (h << 5) - h + s.charCodeAt(i);
+      h = Math.abs(h);
+      return `hsl(${h % 360} 70% 82%)`;
+    }
+
+    // Small BPE-like vocabulary for demonstration. Real models use large vocab tables.
+    const bpeVocab = new Set([
+      'the','ing','ion','tion','ed','er','re','un','in','on','at','or','and','to','a','i','is','s','able','ment','ly','pre','post','sub','com','put','ing','ing'
+    ]);
+
+    function bpeTokenizeWord(word) {
+      const tokens = [];
+      let w = word;
+      while (w.length > 0) {
+        let found = '';
+        // greedy longest-match from start
+        for (let len = Math.min(w.length, 12); len > 0; len--) {
+          const sub = w.slice(0, len).toLowerCase();
+          if (bpeVocab.has(sub)) { found = w.slice(0, len); break; }
+        }
+        if (!found) {
+          // fallback: take 2 or 1 chars to simulate subword fallback
+          found = w.slice(0, Math.min(2, w.length));
+        }
+        tokens.push(found);
+        w = w.slice(found.length);
+      }
+      return tokens;
+    }
+
+    // Unigram-like demo: start split into chars and greedily merge frequent pairs
+    const unigramMerges = new Set(['th','he','er','in','re','on','an','en','ti','io','es','nd','ou','at','ed','ng','is']);
+
+    function unigramTokenizeWord(word) {
+      const parts = word.split('');
+      let merged = true;
+      while (merged) {
+        merged = false;
+        for (let i = 0; i < parts.length - 1; i++) {
+          const pair = (parts[i] + parts[i+1]).toLowerCase();
+          if (unigramMerges.has(pair)) {
+            parts.splice(i, 2, parts[i] + parts[i+1]);
+            merged = true;
+            break;
+          }
+        }
+      }
+      return parts;
+    }
+
+    function tokenize(text, mode = 'bpe') {
+      const words = text.match(/\S+/g) || [];
+      const out = [];
+      words.forEach(w => {
+        // preserve punctuation by splitting word body and trailing punctuation
+        const m = w.match(/^([\w'’-]+)([^\w'’-]*)$/);
+        if (!m) { out.push(w); return; }
+        const core = m[1];
+        const tail = m[2] || '';
+        let parts = [];
+        if (mode === 'bpe') parts = bpeTokenizeWord(core);
+        else parts = unigramTokenizeWord(core);
+        // add punctuation back as separate token if present
+        parts = parts.map(p => p);
+        if (tail) parts.push(tail);
+        out.push(...parts);
+      });
+      return out;
+    }
+
+    function render(tokens) {
+      display.innerHTML = '';
+      tokens.forEach(t => {
+        const el = document.createElement('span');
+        el.className = 'token';
+        el.textContent = t;
+        el.style.background = hashColor(t);
+        display.appendChild(el);
+      });
+      count.textContent = `Token Count: ${tokens.length}`;
+    }
+
+    function currentMode() {
+      const r = radios.find(r => r.checked);
+      return r ? r.value : 'bpe';
+    }
+
+    function update() {
+      const mode = currentMode();
+      const tokens = tokenize(input.value.slice(0, 50), mode);
+      render(tokens);
+    }
+
+    input.addEventListener('input', update);
+    radios.forEach(r => r.addEventListener('change', update));
+
+    // init
+    update();
+  </script>
+</BaseLayout>
