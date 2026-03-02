@@ -17,7 +17,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         <button id="reset-btn">↺ Reset</button>
       </div>
       <div class="speed-control">
-        <label for="speed">Animation Speed:</label>
+        <label for="speed">Speed:</label>
         <input type="range" id="speed" min="1" max="10" value="5" />
         <span id="speed-label">5x</span>
       </div>
@@ -32,15 +32,33 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             <span class="stat-label">Rows Scanned</span>
             <span class="stat-value" id="scan-rows">0</span>
           </div>
-          <div class="stat">
-            <span class="stat-label">I/O Reads</span>
+          <div class="stat stat-with-tooltip">
+            <span class="stat-label">
+              I/O Reads
+              <span class="tooltip-icon" id="io-tooltip-trigger">?</span>
+            </span>
             <span class="stat-value" id="scan-io">0</span>
+            <div class="tooltip" id="io-tooltip">
+              <strong>I/O Reads = Disk Page Accesses</strong><br><br>
+              Databases read data in <em>pages</em> (typically 8KB blocks). Each page holds multiple rows.<br><br>
+              In this demo: <strong>1 page = 10 rows</strong><br><br>
+              Fewer I/O reads = faster queries, because disk access is slow compared to memory.
+            </div>
           </div>
           <div class="stat">
             <span class="stat-label">Time</span>
             <span class="stat-value" id="scan-time">0ms</span>
           </div>
         </div>
+        
+        <!-- Page indicator -->
+        <div class="page-indicator">
+          <span class="page-label">Reading Page:</span>
+          <div class="page-blocks" id="page-blocks">
+            <!-- 10 page blocks will be generated -->
+          </div>
+        </div>
+        
         <div class="table-container" id="table-container">
           <!-- Rows will be generated here -->
         </div>
@@ -49,15 +67,23 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
       <div class="panel btree-index">
         <h2>🌳 B-Tree Index</h2>
-        <p class="description">Traverses a balanced tree structure</p>
+        <p class="description">Binary search through sorted tree nodes</p>
         <div class="stats">
           <div class="stat">
             <span class="stat-label">Nodes Visited</span>
             <span class="stat-value" id="btree-nodes">0</span>
           </div>
-          <div class="stat">
-            <span class="stat-label">I/O Reads</span>
+          <div class="stat stat-with-tooltip">
+            <span class="stat-label">
+              I/O Reads
+              <span class="tooltip-icon" id="btree-io-tooltip-trigger">?</span>
+            </span>
             <span class="stat-value" id="btree-io">0</span>
+            <div class="tooltip" id="btree-io-tooltip">
+              <strong>I/O Reads = Node Accesses</strong><br><br>
+              Each B-tree node is stored in one disk page. Traversing the tree requires reading one page per level.<br><br>
+              With 1 million rows, a B-tree only needs ~3-4 page reads vs. 100,000+ for a full scan!
+            </div>
           </div>
           <div class="stat">
             <span class="stat-label">Time</span>
@@ -65,7 +91,27 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           </div>
         </div>
         <div class="btree-container" id="btree-container">
-          <!-- B-tree will be rendered here -->
+          <!-- Range visualizer -->
+          <div class="range-viz">
+            <div class="range-bar-container">
+              <div class="range-bar" id="range-bar">
+                <div class="range-active" id="range-active"></div>
+                <div class="range-pointer" id="range-pointer">▼</div>
+              </div>
+              <div class="range-labels">
+                <span>1</span>
+                <span>25</span>
+                <span>50</span>
+                <span>75</span>
+                <span>100</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Decision path -->
+          <div class="decision-path" id="decision-path">
+            <div class="path-placeholder">Click "Search" to see the B-tree traversal</div>
+          </div>
         </div>
         <div class="result" id="btree-result"></div>
       </div>
@@ -86,7 +132,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     </section>
   </main>
 
-  <style>
+  <style is:global>
     .section-header {
       text-align: center;
       max-width: 60ch;
@@ -225,6 +271,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       text-align: center;
       flex: 1;
       min-width: 80px;
+      position: relative;
     }
 
     .stat-label {
@@ -241,10 +288,126 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       color: var(--gray-0);
     }
 
+    /* Tooltip styles */
+    .stat-with-tooltip {
+      cursor: help;
+    }
+
+    .tooltip-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--gray-700);
+      color: var(--gray-300);
+      font-size: 0.65rem;
+      font-weight: 700;
+      margin-left: 4px;
+      cursor: help;
+    }
+
+    .tooltip {
+      display: none;
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--gray-800);
+      border: 1px solid var(--gray-700);
+      border-radius: 0.5rem;
+      padding: 0.75rem 1rem;
+      font-size: 0.8rem;
+      color: var(--gray-200);
+      text-align: left;
+      width: 250px;
+      z-index: 100;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      line-height: 1.5;
+    }
+
+    .tooltip::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 8px solid transparent;
+      border-top-color: var(--gray-800);
+    }
+
+    .stat-with-tooltip:hover .tooltip {
+      display: block;
+    }
+
+    /* Page indicator styles */
+    .page-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+      padding: 0.5rem 0.75rem;
+      background: var(--gray-900);
+      border-radius: 0.5rem;
+    }
+
+    .page-label {
+      font-size: 0.75rem;
+      color: var(--gray-400);
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .page-blocks {
+      display: flex;
+      gap: 4px;
+      flex: 1;
+    }
+
+    .page-block {
+      flex: 1;
+      height: 24px;
+      background: #1f2937 !important;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      color: #6b7280 !important;
+      font-family: monospace;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      border: 2px solid transparent;
+    }
+
+    .page-block.reading {
+      background: #3b82f6 !important;
+      color: #ffffff !important;
+      transform: scaleY(1.2);
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.7), 0 0 30px rgba(59, 130, 246, 0.4);
+      border-color: #60a5fa;
+    }
+
+    .page-block.read {
+      background: #374151 !important;
+      color: #9ca3af !important;
+      opacity: 0.6;
+    }
+
+    .page-block.has-target {
+      background: #10b981 !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.7), 0 0 30px rgba(16, 185, 129, 0.4);
+      border-color: #34d399;
+      transform: scaleY(1.2);
+    }
+
+    /* Table scan styles */
     .table-container {
       flex: 1;
       overflow-y: auto;
-      background: var(--gray-900);
+      background: #111827;
       border-radius: 0.5rem;
       padding: 0.5rem;
       display: grid;
@@ -255,98 +418,218 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
     .table-row {
       padding: 0.35rem;
-      background: var(--gray-800);
+      background: #1f2937 !important;
       border-radius: 4px;
       font-size: 0.75rem;
       text-align: center;
-      transition: background 0.15s, transform 0.15s;
+      transition: all 0.15s ease;
       font-family: monospace;
+      border: 2px solid transparent;
+      color: #d1d5db !important;
+    }
+
+    .table-row.in-current-page {
+      border-color: #3b82f6 !important;
+      background: rgba(59, 130, 246, 0.2) !important;
+      box-shadow: inset 0 0 8px rgba(59, 130, 246, 0.3);
     }
 
     .table-row.scanning {
-      background: #f59e0b;
-      color: #000;
-      transform: scale(1.1);
+      background: #f59e0b !important;
+      color: #000 !important;
+      transform: scale(1.2);
+      border-color: #fbbf24 !important;
+      box-shadow: 0 0 20px rgba(245, 158, 11, 0.8), 0 0 40px rgba(245, 158, 11, 0.4);
+      z-index: 10;
+      position: relative;
     }
 
     .table-row.found {
-      background: #10b981;
-      color: #000;
-      transform: scale(1.15);
+      background: #10b981 !important;
+      color: #000 !important;
+      transform: scale(1.3);
       font-weight: 700;
+      border-color: #34d399 !important;
+      box-shadow: 0 0 25px rgba(16, 185, 129, 0.8), 0 0 50px rgba(16, 185, 129, 0.4);
+      z-index: 10;
+      position: relative;
     }
 
     .table-row.scanned {
-      background: var(--gray-700);
+      background: #374151 !important;
+      color: #6b7280 !important;
       opacity: 0.6;
     }
 
+    .table-row.in-scanned-page {
+      opacity: 0.5;
+    }
+
+    /* B-tree container styles */
     .btree-container {
       flex: 1;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 0.75rem;
+      gap: 1.5rem;
       background: var(--gray-900);
       border-radius: 0.5rem;
-      padding: 1rem;
+      padding: 1.5rem;
       overflow: auto;
     }
 
-    .btree-level {
-      display: flex;
-      gap: 0.5rem;
-      justify-content: center;
-      flex-wrap: wrap;
+    /* Range visualizer */
+    .range-viz {
+      padding: 0 0.5rem;
     }
 
-    .btree-node {
+    .range-bar-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .range-bar {
+      height: 32px;
       background: var(--gray-800);
-      border: 2px solid var(--gray-700);
-      border-radius: 0.5rem;
-      padding: 0.5rem 0.75rem;
-      font-family: monospace;
-      font-size: 0.8rem;
-      transition: all 0.2s;
-      display: flex;
-      gap: 0.5rem;
-    }
-
-    .btree-node.visiting {
-      border-color: #f59e0b;
-      background: rgba(245, 158, 11, 0.2);
-      transform: scale(1.1);
-    }
-
-    .btree-node.visited {
-      border-color: var(--gray-600);
-      opacity: 0.5;
-    }
-
-    .btree-node.found {
-      border-color: #10b981;
-      background: rgba(16, 185, 129, 0.2);
-      transform: scale(1.1);
-    }
-
-    .btree-key {
-      padding: 0.25rem 0.5rem;
-      background: var(--gray-700);
       border-radius: 4px;
+      position: relative;
+      overflow: visible;
     }
 
-    .btree-key.highlight {
+    .range-active {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+      border-radius: 4px;
+      width: 100%;
+      transition: left 0.3s ease, width 0.3s ease;
+    }
+
+    .range-pointer {
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1rem;
+      color: #f59e0b;
+      opacity: 0;
+      transition: left 0.3s ease, opacity 0.2s;
+    }
+
+    .range-pointer.visible {
+      opacity: 1;
+    }
+
+    .range-pointer.found {
+      color: #10b981;
+    }
+
+    .range-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--gray-400);
+      font-family: monospace;
+    }
+
+    /* Decision path styles */
+    .decision-path {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      flex: 1;
+    }
+
+    .path-placeholder {
+      color: var(--gray-500);
+      text-align: center;
+      padding: 2rem;
+      font-style: italic;
+    }
+
+    .decision-step {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      background: var(--gray-800);
+      border-radius: 0.5rem;
+      border-left: 4px solid var(--gray-700);
+      opacity: 0;
+      transform: translateX(-10px);
+      transition: opacity 0.3s, transform 0.3s, border-color 0.3s, background 0.3s;
+    }
+
+    .decision-step.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .decision-step.active {
+      border-left-color: #f59e0b;
+      background: rgba(245, 158, 11, 0.1);
+    }
+
+    .decision-step.done {
+      border-left-color: var(--gray-600);
+      opacity: 0.7;
+    }
+
+    .decision-step.found {
+      border-left-color: #10b981;
+      background: rgba(16, 185, 129, 0.15);
+      opacity: 1;
+    }
+
+    .step-number {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--gray-700);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .decision-step.active .step-number {
       background: #f59e0b;
       color: #000;
     }
 
-    .btree-key.match {
+    .decision-step.found .step-number {
       background: #10b981;
       color: #000;
-      font-weight: 700;
     }
 
+    .step-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .step-action {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .step-detail {
+      font-size: 0.8rem;
+      color: var(--gray-400);
+      font-family: monospace;
+    }
+
+    .step-direction {
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    /* Result styles */
     .result {
       margin-top: 1rem;
       padding: 0.75rem;
@@ -366,6 +649,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       color: #ef4444;
     }
 
+    /* Explanation section */
     .explanation {
       margin-top: 2rem;
     }
@@ -415,19 +699,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   <script>
     const TABLE_SIZE = 100;
-    const ROWS_PER_IO = 10; // Simulate reading 10 rows per I/O operation
-    
-    // B-tree structure (simplified for visualization)
-    // Level 0 (root): [50]
-    // Level 1: [25, 75]
-    // Level 2: [12, 37], [62, 87]
-    // Level 3 (leaves): actual ranges
-    const btreeStructure = [
-      [[50]],
-      [[25], [75]],
-      [[12, 37], [62, 87]],
-      [[1, 6, 12], [18, 25, 31], [37, 43, 50], [56, 62, 68], [75, 81, 87], [93, 100]]
-    ];
+    const ROWS_PER_PAGE = 10;
+    const TOTAL_PAGES = TABLE_SIZE / ROWS_PER_PAGE;
 
     let animationRunning = false;
     let searchValue = 73;
@@ -446,216 +719,293 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       }
     }
 
-    // Initialize B-tree visualization
-    function initBTree() {
-      const container = document.getElementById('btree-container');
+    // Initialize page blocks
+    function initPageBlocks() {
+      const container = document.getElementById('page-blocks');
       container.innerHTML = '';
-      
-      btreeStructure.forEach((level, levelIndex) => {
-        const levelDiv = document.createElement('div');
-        levelDiv.className = 'btree-level';
-        levelDiv.id = `btree-level-${levelIndex}`;
-        
-        level.forEach((node, nodeIndex) => {
-          const nodeDiv = document.createElement('div');
-          nodeDiv.className = 'btree-node';
-          nodeDiv.id = `btree-node-${levelIndex}-${nodeIndex}`;
-          
-          node.forEach((key, keyIndex) => {
-            const keySpan = document.createElement('span');
-            keySpan.className = 'btree-key';
-            keySpan.id = `btree-key-${levelIndex}-${nodeIndex}-${keyIndex}`;
-            keySpan.textContent = key;
-            nodeDiv.appendChild(keySpan);
-          });
-          
-          levelDiv.appendChild(nodeDiv);
-        });
-        
-        container.appendChild(levelDiv);
-      });
+      for (let i = 0; i < TOTAL_PAGES; i++) {
+        const block = document.createElement('div');
+        block.className = 'page-block';
+        block.id = `page-${i}`;
+        block.textContent = i + 1;
+        container.appendChild(block);
+      }
     }
 
     // Reset visualization
     function reset() {
+      // Reset table rows
       document.querySelectorAll('.table-row').forEach(row => {
         row.className = 'table-row';
       });
-      document.querySelectorAll('.btree-node').forEach(node => {
-        node.className = 'btree-node';
-      });
-      document.querySelectorAll('.btree-key').forEach(key => {
-        key.className = 'btree-key';
+      
+      // Reset page blocks
+      document.querySelectorAll('.page-block').forEach(block => {
+        block.className = 'page-block';
       });
       
+      // Reset stats
       document.getElementById('scan-rows').textContent = '0';
       document.getElementById('scan-io').textContent = '0';
       document.getElementById('scan-time').textContent = '0ms';
       document.getElementById('btree-nodes').textContent = '0';
       document.getElementById('btree-io').textContent = '0';
       document.getElementById('btree-time').textContent = '0ms';
+      
+      // Reset results
       document.getElementById('scan-result').textContent = '';
       document.getElementById('scan-result').className = 'result';
       document.getElementById('btree-result').textContent = '';
       document.getElementById('btree-result').className = 'result';
+      
+      // Reset B-tree visualization
+      document.getElementById('decision-path').innerHTML = '<div class="path-placeholder">Click "Search" to see the B-tree traversal</div>';
+      
+      const rangeActive = document.getElementById('range-active');
+      rangeActive.style.left = '0%';
+      rangeActive.style.width = '100%';
+      
+      const pointer = document.getElementById('range-pointer');
+      pointer.classList.remove('visible', 'found');
     }
 
-    // Delay helper
     function delay(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    // Get animation delay based on speed
     function getDelay() {
       return Math.max(20, 200 - (animationSpeed * 18));
+    }
+
+    // Get page number for a row (0-indexed)
+    function getPageForRow(rowNum) {
+      return Math.floor((rowNum - 1) / ROWS_PER_PAGE);
+    }
+
+    // Get rows in a page
+    function getRowsInPage(pageNum) {
+      const start = pageNum * ROWS_PER_PAGE + 1;
+      const end = start + ROWS_PER_PAGE - 1;
+      return { start, end };
     }
 
     // Table scan animation
     async function animateTableScan(target) {
       let rowsScanned = 0;
+      let currentPage = -1;
       let ioReads = 0;
       const startTime = performance.now();
+      const targetPage = getPageForRow(target);
       
       for (let i = 1; i <= TABLE_SIZE; i++) {
         if (!animationRunning) return;
         
         const row = document.getElementById(`row-${i}`);
-        row.className = 'table-row scanning';
-        rowsScanned++;
+        const pageNum = getPageForRow(i);
         
-        if (i % ROWS_PER_IO === 1) {
+        // New page started
+        if (pageNum !== currentPage) {
+          // Mark previous page as read
+          if (currentPage >= 0) {
+            document.getElementById(`page-${currentPage}`).className = 'page-block read';
+            // Mark rows in previous page as scanned
+            const prevPageRows = getRowsInPage(currentPage);
+            for (let j = prevPageRows.start; j <= prevPageRows.end && j < i; j++) {
+              const prevRow = document.getElementById(`row-${j}`);
+              if (!prevRow.classList.contains('found')) {
+                prevRow.className = 'table-row scanned in-scanned-page';
+              }
+            }
+          }
+          
+          currentPage = pageNum;
           ioReads++;
           document.getElementById('scan-io').textContent = ioReads;
+          
+          // Highlight current page
+          const pageBlock = document.getElementById(`page-${pageNum}`);
+          pageBlock.className = pageNum === targetPage ? 'page-block reading has-target' : 'page-block reading';
+          
+          // Highlight all rows in current page
+          const pageRows = getRowsInPage(pageNum);
+          for (let j = pageRows.start; j <= Math.min(pageRows.end, TABLE_SIZE); j++) {
+            const pageRow = document.getElementById(`row-${j}`);
+            if (!pageRow.classList.contains('scanned')) {
+              pageRow.classList.add('in-current-page');
+            }
+          }
         }
         
+        // Scanning current row
+        row.className = 'table-row scanning';
+        rowsScanned++;
         document.getElementById('scan-rows').textContent = rowsScanned;
         
         await delay(getDelay());
         
         if (i === target) {
           row.className = 'table-row found';
+          document.getElementById(`page-${pageNum}`).className = 'page-block has-target';
+          
           const elapsed = Math.round(performance.now() - startTime);
           document.getElementById('scan-time').textContent = `${elapsed}ms`;
-          document.getElementById('scan-result').textContent = `✓ Found ID ${target} after scanning ${rowsScanned} rows`;
+          document.getElementById('scan-result').textContent = `✓ Found ID ${target} after scanning ${rowsScanned} rows (${ioReads} page reads)`;
           document.getElementById('scan-result').className = 'result found';
           return;
         } else {
-          row.className = 'table-row scanned';
+          row.className = 'table-row scanned in-current-page';
         }
       }
       
-      // Not found
       const elapsed = Math.round(performance.now() - startTime);
       document.getElementById('scan-time').textContent = `${elapsed}ms`;
-      document.getElementById('scan-result').textContent = `✗ ID ${target} not found after scanning all ${TABLE_SIZE} rows`;
+      document.getElementById('scan-result').textContent = `✗ ID ${target} not found`;
       document.getElementById('scan-result').className = 'result not-found';
+    }
+
+    // Generate B-tree search steps
+    function getBTreeSteps(target) {
+      const steps = [];
+      let low = 1;
+      let high = 100;
+      
+      // Level 0: Root
+      const pivot0 = 50;
+      if (target === pivot0) {
+        steps.push({ pivot: pivot0, low, high, direction: 'match', newLow: low, newHigh: high });
+        return steps;
+      } else if (target < pivot0) {
+        steps.push({ pivot: pivot0, low, high, direction: 'left', newLow: low, newHigh: pivot0 - 1 });
+        high = pivot0 - 1;
+      } else {
+        steps.push({ pivot: pivot0, low, high, direction: 'right', newLow: pivot0 + 1, newHigh: high });
+        low = pivot0 + 1;
+      }
+      
+      // Level 1
+      const pivot1 = target <= 50 ? 25 : 75;
+      if (target === pivot1) {
+        steps.push({ pivot: pivot1, low, high, direction: 'match', newLow: low, newHigh: high });
+        return steps;
+      } else if (target < pivot1) {
+        steps.push({ pivot: pivot1, low, high, direction: 'left', newLow: low, newHigh: pivot1 - 1 });
+        high = pivot1 - 1;
+      } else {
+        steps.push({ pivot: pivot1, low, high, direction: 'right', newLow: pivot1 + 1, newHigh: high });
+        low = pivot1 + 1;
+      }
+      
+      // Level 2
+      let pivot2;
+      if (target <= 25) pivot2 = 12;
+      else if (target <= 50) pivot2 = 37;
+      else if (target <= 75) pivot2 = 62;
+      else pivot2 = 87;
+      
+      if (target === pivot2) {
+        steps.push({ pivot: pivot2, low, high, direction: 'match', newLow: low, newHigh: high });
+        return steps;
+      } else if (target < pivot2) {
+        steps.push({ pivot: pivot2, low, high, direction: 'left', newLow: low, newHigh: pivot2 - 1 });
+        high = pivot2 - 1;
+      } else {
+        steps.push({ pivot: pivot2, low, high, direction: 'right', newLow: pivot2 + 1, newHigh: high });
+        low = pivot2 + 1;
+      }
+      
+      // Level 3: Leaf - found in range
+      steps.push({ pivot: target, low, high, direction: 'found', newLow: low, newHigh: high });
+      
+      return steps;
     }
 
     // B-tree search animation
     async function animateBTreeSearch(target) {
-      let nodesVisited = 0;
-      let ioReads = 0;
       const startTime = performance.now();
+      const steps = getBTreeSteps(target);
+      const pathContainer = document.getElementById('decision-path');
+      const rangeActive = document.getElementById('range-active');
+      const pointer = document.getElementById('range-pointer');
       
-      // Traverse the tree
-      const path = getBTreePath(target);
+      pathContainer.innerHTML = '';
+      pointer.classList.add('visible');
       
-      for (const step of path) {
+      let nodesVisited = 0;
+      
+      for (let i = 0; i < steps.length; i++) {
         if (!animationRunning) return;
         
-        const { level, nodeIndex, keyIndex, isMatch } = step;
-        const node = document.getElementById(`btree-node-${level}-${nodeIndex}`);
-        const key = document.getElementById(`btree-key-${level}-${nodeIndex}-${keyIndex}`);
-        
-        // Visiting animation
-        node.className = 'btree-node visiting';
-        if (key) key.className = 'btree-key highlight';
+        const step = steps[i];
         nodesVisited++;
-        ioReads++;
         
         document.getElementById('btree-nodes').textContent = nodesVisited;
-        document.getElementById('btree-io').textContent = ioReads;
+        document.getElementById('btree-io').textContent = nodesVisited;
         
-        await delay(getDelay() * 3);
+        // Update range visualization
+        const leftPct = ((step.low - 1) / 100) * 100;
+        const widthPct = ((step.high - step.low + 1) / 100) * 100;
+        rangeActive.style.left = `${leftPct}%`;
+        rangeActive.style.width = `${widthPct}%`;
         
-        if (isMatch) {
-          node.className = 'btree-node found';
-          if (key) key.className = 'btree-key match';
+        // Update pointer position
+        const pointerPct = ((step.pivot - 1) / 99) * 100;
+        pointer.style.left = `${pointerPct}%`;
+        
+        // Create step element
+        const stepEl = document.createElement('div');
+        stepEl.className = 'decision-step';
+        
+        let actionText, detailText, directionIcon;
+        
+        if (step.direction === 'match' || step.direction === 'found') {
+          actionText = `Found ${target}!`;
+          detailText = step.direction === 'match' 
+            ? `Exact match at pivot ${step.pivot}` 
+            : `Located in leaf node [${step.low}–${step.high}]`;
+          directionIcon = '✓';
+          pointer.classList.add('found');
+        } else {
+          actionText = `Check pivot ${step.pivot}`;
+          detailText = `${target} ${step.direction === 'left' ? '<' : '>'} ${step.pivot} → go ${step.direction.toUpperCase()}`;
+          directionIcon = step.direction === 'left' ? '←' : '→';
+        }
+        
+        stepEl.innerHTML = `
+          <span class="step-number">${nodesVisited}</span>
+          <div class="step-content">
+            <span class="step-action">${actionText}</span>
+            <span class="step-detail">${detailText}</span>
+          </div>
+          <span class="step-direction">${directionIcon}</span>
+        `;
+        
+        pathContainer.appendChild(stepEl);
+        
+        // Animate step appearance
+        await delay(50);
+        stepEl.classList.add('visible', 'active');
+        
+        await delay(getDelay() * 4);
+        
+        // Mark as done or found
+        if (step.direction === 'match' || step.direction === 'found') {
+          stepEl.classList.remove('active');
+          stepEl.classList.add('found');
+          
+          // Update final range
+          rangeActive.style.left = `${((target - 1) / 100) * 100}%`;
+          rangeActive.style.width = '1%';
+          
           const elapsed = Math.round(performance.now() - startTime);
           document.getElementById('btree-time').textContent = `${elapsed}ms`;
-          document.getElementById('btree-result').textContent = `✓ Found ID ${target} after visiting ${nodesVisited} nodes`;
+          document.getElementById('btree-result').textContent = `✓ Found ID ${target} after visiting ${nodesVisited} nodes (${nodesVisited} page reads)`;
           document.getElementById('btree-result').className = 'result found';
           return;
         } else {
-          node.className = 'btree-node visited';
-          if (key) key.className = 'btree-key';
+          stepEl.classList.remove('active');
+          stepEl.classList.add('done');
         }
       }
-      
-      // Not found
-      const elapsed = Math.round(performance.now() - startTime);
-      document.getElementById('btree-time').textContent = `${elapsed}ms`;
-      document.getElementById('btree-result').textContent = `✗ ID ${target} not found`;
-      document.getElementById('btree-result').className = 'result not-found';
-    }
-
-    // Get the path through B-tree for a given value
-    function getBTreePath(target) {
-      const path = [];
-      
-      // Level 0: root [50]
-      if (target <= 50) {
-        path.push({ level: 0, nodeIndex: 0, keyIndex: 0, isMatch: target === 50 });
-        if (target === 50) return path;
-        
-        // Level 1: [25]
-        path.push({ level: 1, nodeIndex: 0, keyIndex: 0, isMatch: target === 25 });
-        if (target === 25) return path;
-        
-        if (target <= 25) {
-          // Level 2: [12, 37] - check 12
-          path.push({ level: 2, nodeIndex: 0, keyIndex: 0, isMatch: target === 12 });
-          if (target === 12) return path;
-          
-          if (target <= 12) {
-            path.push({ level: 3, nodeIndex: 0, keyIndex: target <= 6 ? (target === 1 ? 0 : 1) : 2, isMatch: target >= 1 && target <= 12 });
-          } else {
-            path.push({ level: 3, nodeIndex: 1, keyIndex: target <= 25 ? 0 : 1, isMatch: target > 12 && target <= 25 });
-          }
-        } else {
-          // Level 2: [12, 37] - check 37
-          path.push({ level: 2, nodeIndex: 0, keyIndex: 1, isMatch: target === 37 });
-          if (target === 37) return path;
-          
-          path.push({ level: 3, nodeIndex: 2, keyIndex: target <= 43 ? 0 : 1, isMatch: target > 25 && target <= 50 });
-        }
-      } else {
-        path.push({ level: 0, nodeIndex: 0, keyIndex: 0, isMatch: false });
-        
-        // Level 1: [75]
-        path.push({ level: 1, nodeIndex: 1, keyIndex: 0, isMatch: target === 75 });
-        if (target === 75) return path;
-        
-        if (target <= 75) {
-          // Level 2: [62, 87] - check 62
-          path.push({ level: 2, nodeIndex: 1, keyIndex: 0, isMatch: target === 62 });
-          if (target === 62) return path;
-          
-          path.push({ level: 3, nodeIndex: 3, keyIndex: target <= 62 ? 0 : 1, isMatch: target > 50 && target <= 75 });
-        } else {
-          // Level 2: [62, 87] - check 87
-          path.push({ level: 2, nodeIndex: 1, keyIndex: 1, isMatch: target === 87 });
-          if (target === 87) return path;
-          
-          if (target <= 87) {
-            path.push({ level: 3, nodeIndex: 4, keyIndex: target <= 81 ? 0 : 1, isMatch: target > 75 && target <= 87 });
-          } else {
-            path.push({ level: 3, nodeIndex: 5, keyIndex: target <= 93 ? 0 : 1, isMatch: target > 87 && target <= 100 });
-          }
-        }
-      }
-      
-      return path;
     }
 
     // Main search function
@@ -671,7 +1021,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       reset();
       animationRunning = true;
       
-      // Run both animations in parallel
       await Promise.all([
         animateTableScan(searchValue),
         animateBTreeSearch(searchValue)
@@ -696,8 +1045,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       if (e.key === 'Enter') search();
     });
 
-    // Initialize on load
+    // Initialize
     initTable();
-    initBTree();
+    initPageBlocks();
   </script>
 </BaseLayout>
