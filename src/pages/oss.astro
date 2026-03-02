@@ -1,0 +1,203 @@
+---
+import { getCollection } from 'astro:content';
+import ContactCTA from '../components/ContactCTA.astro';
+import Hero from '../components/Hero.astro';
+import Icon from '../components/Icon.astro';
+import Pill from '../components/Pill.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const contributions = (await getCollection('oss')).sort(
+	(a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf(),
+);
+
+// Group by repo
+const byRepo = contributions.reduce((acc, item) => {
+	const repo = item.data.repo;
+	if (!acc[repo]) acc[repo] = [];
+	acc[repo].push(item);
+	return acc;
+}, {} as Record<string, typeof contributions>);
+---
+
+<BaseLayout
+	title="Open Source | Ademola Arigbabuwo"
+	description="My open source contributions and projects"
+>
+	<div class="stack gap-20">
+		<main class="wrapper stack gap-8">
+			<Hero
+				title="Open Source"
+				tagline="Contributions to projects I care about."
+				align="start"
+			/>
+			
+			<section class="contributions">
+				{contributions.length === 0 ? (
+					<p class="empty">No contributions yet. Check back soon!</p>
+				) : (
+					<ul class="contribution-list">
+						{contributions.map((contribution) => (
+							<li class="contribution-card">
+								<div class="card-header">
+									<span class={`type-badge ${contribution.data.type}`}>
+										{contribution.data.type}
+									</span>
+									<a href={contribution.data.repoUrl} class="repo-link" target="_blank" rel="noopener">
+										{contribution.data.repo}
+									</a>
+								</div>
+								<h3>
+									<a href={`/oss/${contribution.id}`}>{contribution.data.title}</a>
+								</h3>
+								<p class="description">{contribution.data.description}</p>
+								<div class="card-footer">
+									{contribution.data.tags && (
+										<div class="tags">
+											{contribution.data.tags.map((tag) => <Pill>{tag}</Pill>)}
+										</div>
+									)}
+									{contribution.data.link && (
+										<a href={contribution.data.link} class="external-link" target="_blank" rel="noopener">
+											View <Icon icon="arrow-right" size="1em" />
+										</a>
+									)}
+								</div>
+							</li>
+						))}
+					</ul>
+				)}
+			</section>
+		</main>
+		<ContactCTA />
+	</div>
+</BaseLayout>
+
+<style>
+	.contributions {
+		margin-top: 2rem;
+	}
+
+	.empty {
+		text-align: center;
+		color: var(--gray-400);
+		font-size: var(--text-lg);
+	}
+
+	.contribution-list {
+		list-style: none;
+		padding: 0;
+		display: grid;
+		gap: 1.5rem;
+	}
+
+	.contribution-card {
+		background: var(--gradient-subtle);
+		border: 1px solid var(--gray-800);
+		border-radius: 1rem;
+		padding: 1.5rem;
+		transition: box-shadow var(--theme-transition);
+	}
+
+	.contribution-card:hover {
+		box-shadow: var(--shadow-md);
+	}
+
+	.card-header {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		margin-bottom: 0.75rem;
+	}
+
+	.type-badge {
+		font-size: var(--text-sm);
+		padding: 0.25rem 0.75rem;
+		border-radius: 999rem;
+		text-transform: uppercase;
+		font-weight: 600;
+	}
+
+	.type-badge.pr {
+		background: var(--accent-regular);
+		color: var(--accent-text-over);
+	}
+
+	.type-badge.issue {
+		background: #f59e0b;
+		color: #000;
+	}
+
+	.type-badge.maintainer {
+		background: #10b981;
+		color: #000;
+	}
+
+	.type-badge.contributor {
+		background: #8b5cf6;
+		color: #fff;
+	}
+
+	.repo-link {
+		font-size: var(--text-sm);
+		color: var(--gray-300);
+		text-decoration: none;
+	}
+
+	.repo-link:hover {
+		color: var(--gray-0);
+		text-decoration: underline;
+	}
+
+	.contribution-card h3 {
+		font-size: var(--text-lg);
+		margin: 0 0 0.5rem;
+	}
+
+	.contribution-card h3 a {
+		color: var(--gray-0);
+		text-decoration: none;
+	}
+
+	.contribution-card h3 a:hover {
+		text-decoration: underline;
+	}
+
+	.description {
+		color: var(--gray-300);
+		font-size: var(--text-md);
+		margin: 0 0 1rem;
+	}
+
+	.card-footer {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 1rem;
+	}
+
+	.tags {
+		display: flex;
+		gap: 0.5rem;
+		flex-wrap: wrap;
+	}
+
+	.external-link {
+		display: flex;
+		align-items: center;
+		gap: 0.25rem;
+		color: var(--accent-regular);
+		text-decoration: none;
+		font-size: var(--text-sm);
+	}
+
+	.external-link:hover {
+		text-decoration: underline;
+	}
+
+	@media (min-width: 50em) {
+		.contribution-list {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+</style>
