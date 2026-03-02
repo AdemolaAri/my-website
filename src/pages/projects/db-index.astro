@@ -1,0 +1,703 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="DB Index Visualizer | Ademola Arigbabuwo" description="Visualize how database indexes speed up queries compared to full table scans">
+  <main class="wrapper stack gap-8">
+    <header class="section-header">
+      <h1>DB Index Visualizer</h1>
+      <p>See how indexes dramatically speed up database queries. Search for a value and watch the difference between a full table scan and a B-tree index lookup.</p>
+    </header>
+
+    <section class="controls">
+      <div class="input-group">
+        <label for="search-value">Search for ID:</label>
+        <input type="number" id="search-value" min="1" max="100" value="73" />
+        <button id="search-btn">🔍 Search</button>
+        <button id="reset-btn">↺ Reset</button>
+      </div>
+      <div class="speed-control">
+        <label for="speed">Animation Speed:</label>
+        <input type="range" id="speed" min="1" max="10" value="5" />
+        <span id="speed-label">5x</span>
+      </div>
+    </section>
+
+    <section class="visualizer">
+      <div class="panel table-scan">
+        <h2>📋 Full Table Scan</h2>
+        <p class="description">Checks every row sequentially until found</p>
+        <div class="stats">
+          <div class="stat">
+            <span class="stat-label">Rows Scanned</span>
+            <span class="stat-value" id="scan-rows">0</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">I/O Reads</span>
+            <span class="stat-value" id="scan-io">0</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Time</span>
+            <span class="stat-value" id="scan-time">0ms</span>
+          </div>
+        </div>
+        <div class="table-container" id="table-container">
+          <!-- Rows will be generated here -->
+        </div>
+        <div class="result" id="scan-result"></div>
+      </div>
+
+      <div class="panel btree-index">
+        <h2>🌳 B-Tree Index</h2>
+        <p class="description">Traverses a balanced tree structure</p>
+        <div class="stats">
+          <div class="stat">
+            <span class="stat-label">Nodes Visited</span>
+            <span class="stat-value" id="btree-nodes">0</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">I/O Reads</span>
+            <span class="stat-value" id="btree-io">0</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Time</span>
+            <span class="stat-value" id="btree-time">0ms</span>
+          </div>
+        </div>
+        <div class="btree-container" id="btree-container">
+          <!-- B-tree will be rendered here -->
+        </div>
+        <div class="result" id="btree-result"></div>
+      </div>
+    </section>
+
+    <section class="explanation">
+      <h3>How it works</h3>
+      <div class="explanation-grid">
+        <div class="explanation-card">
+          <h4>📋 Table Scan</h4>
+          <p>Without an index, the database must examine <strong>every single row</strong> to find your data. For a table with 1 million rows, that's 1 million comparisons in the worst case. Time complexity: <code>O(n)</code></p>
+        </div>
+        <div class="explanation-card">
+          <h4>🌳 B-Tree Index</h4>
+          <p>A B-tree keeps data sorted in a tree structure. At each node, we eliminate half (or more) of the remaining possibilities. For 1 million rows, we need only ~20 comparisons. Time complexity: <code>O(log n)</code></p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <style>
+    .section-header {
+      text-align: center;
+      max-width: 60ch;
+      margin: 0 auto;
+    }
+
+    .section-header h1 {
+      font-size: var(--text-3xl);
+      margin-bottom: 0.5rem;
+    }
+
+    .section-header p {
+      color: var(--gray-300);
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      justify-content: center;
+      align-items: center;
+      padding: 1.5rem;
+      background: var(--gradient-subtle);
+      border-radius: 1rem;
+      border: 1px solid var(--gray-800);
+    }
+
+    .input-group {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .input-group label {
+      color: var(--gray-300);
+      font-weight: 500;
+    }
+
+    .input-group input[type="number"] {
+      width: 80px;
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.5rem;
+      border: 1px solid var(--gray-800);
+      background: var(--gray-999);
+      color: var(--gray-0);
+      font-size: 1rem;
+    }
+
+    .input-group button {
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+
+    #search-btn {
+      background: var(--accent-regular);
+      color: var(--accent-text-over);
+    }
+
+    #search-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    #reset-btn {
+      background: var(--gray-800);
+      color: var(--gray-0);
+    }
+
+    .speed-control {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .speed-control label {
+      color: var(--gray-300);
+      font-size: 0.875rem;
+    }
+
+    #speed-label {
+      color: var(--gray-300);
+      font-size: 0.875rem;
+      min-width: 2rem;
+    }
+
+    .visualizer {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 900px) {
+      .visualizer {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel {
+      background: var(--gradient-subtle);
+      border: 1px solid var(--gray-800);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      min-height: 500px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel h2 {
+      font-size: var(--text-lg);
+      margin: 0 0 0.25rem;
+    }
+
+    .panel .description {
+      color: var(--gray-400);
+      font-size: 0.875rem;
+      margin: 0 0 1rem;
+    }
+
+    .stats {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .stat {
+      background: var(--gray-900);
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      text-align: center;
+      flex: 1;
+      min-width: 80px;
+    }
+
+    .stat-label {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--gray-400);
+      text-transform: uppercase;
+    }
+
+    .stat-value {
+      display: block;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--gray-0);
+    }
+
+    .table-container {
+      flex: 1;
+      overflow-y: auto;
+      background: var(--gray-900);
+      border-radius: 0.5rem;
+      padding: 0.5rem;
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 4px;
+      align-content: start;
+    }
+
+    .table-row {
+      padding: 0.35rem;
+      background: var(--gray-800);
+      border-radius: 4px;
+      font-size: 0.75rem;
+      text-align: center;
+      transition: background 0.15s, transform 0.15s;
+      font-family: monospace;
+    }
+
+    .table-row.scanning {
+      background: #f59e0b;
+      color: #000;
+      transform: scale(1.1);
+    }
+
+    .table-row.found {
+      background: #10b981;
+      color: #000;
+      transform: scale(1.15);
+      font-weight: 700;
+    }
+
+    .table-row.scanned {
+      background: var(--gray-700);
+      opacity: 0.6;
+    }
+
+    .btree-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      background: var(--gray-900);
+      border-radius: 0.5rem;
+      padding: 1rem;
+      overflow: auto;
+    }
+
+    .btree-level {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btree-node {
+      background: var(--gray-800);
+      border: 2px solid var(--gray-700);
+      border-radius: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      font-family: monospace;
+      font-size: 0.8rem;
+      transition: all 0.2s;
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btree-node.visiting {
+      border-color: #f59e0b;
+      background: rgba(245, 158, 11, 0.2);
+      transform: scale(1.1);
+    }
+
+    .btree-node.visited {
+      border-color: var(--gray-600);
+      opacity: 0.5;
+    }
+
+    .btree-node.found {
+      border-color: #10b981;
+      background: rgba(16, 185, 129, 0.2);
+      transform: scale(1.1);
+    }
+
+    .btree-key {
+      padding: 0.25rem 0.5rem;
+      background: var(--gray-700);
+      border-radius: 4px;
+    }
+
+    .btree-key.highlight {
+      background: #f59e0b;
+      color: #000;
+    }
+
+    .btree-key.match {
+      background: #10b981;
+      color: #000;
+      font-weight: 700;
+    }
+
+    .result {
+      margin-top: 1rem;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      text-align: center;
+      font-weight: 600;
+      min-height: 2.5rem;
+    }
+
+    .result.found {
+      background: rgba(16, 185, 129, 0.2);
+      color: #10b981;
+    }
+
+    .result.not-found {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+    }
+
+    .explanation {
+      margin-top: 2rem;
+    }
+
+    .explanation h3 {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    .explanation-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 600px) {
+      .explanation-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .explanation-card {
+      background: var(--gradient-subtle);
+      border: 1px solid var(--gray-800);
+      border-radius: 1rem;
+      padding: 1.5rem;
+    }
+
+    .explanation-card h4 {
+      margin: 0 0 0.5rem;
+    }
+
+    .explanation-card p {
+      color: var(--gray-300);
+      font-size: 0.9rem;
+      margin: 0;
+      line-height: 1.6;
+    }
+
+    .explanation-card code {
+      background: var(--gray-800);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+    }
+  </style>
+
+  <script>
+    const TABLE_SIZE = 100;
+    const ROWS_PER_IO = 10; // Simulate reading 10 rows per I/O operation
+    
+    // B-tree structure (simplified for visualization)
+    // Level 0 (root): [50]
+    // Level 1: [25, 75]
+    // Level 2: [12, 37], [62, 87]
+    // Level 3 (leaves): actual ranges
+    const btreeStructure = [
+      [[50]],
+      [[25], [75]],
+      [[12, 37], [62, 87]],
+      [[1, 6, 12], [18, 25, 31], [37, 43, 50], [56, 62, 68], [75, 81, 87], [93, 100]]
+    ];
+
+    let animationRunning = false;
+    let searchValue = 73;
+    let animationSpeed = 5;
+
+    // Initialize table
+    function initTable() {
+      const container = document.getElementById('table-container');
+      container.innerHTML = '';
+      for (let i = 1; i <= TABLE_SIZE; i++) {
+        const row = document.createElement('div');
+        row.className = 'table-row';
+        row.id = `row-${i}`;
+        row.textContent = i;
+        container.appendChild(row);
+      }
+    }
+
+    // Initialize B-tree visualization
+    function initBTree() {
+      const container = document.getElementById('btree-container');
+      container.innerHTML = '';
+      
+      btreeStructure.forEach((level, levelIndex) => {
+        const levelDiv = document.createElement('div');
+        levelDiv.className = 'btree-level';
+        levelDiv.id = `btree-level-${levelIndex}`;
+        
+        level.forEach((node, nodeIndex) => {
+          const nodeDiv = document.createElement('div');
+          nodeDiv.className = 'btree-node';
+          nodeDiv.id = `btree-node-${levelIndex}-${nodeIndex}`;
+          
+          node.forEach((key, keyIndex) => {
+            const keySpan = document.createElement('span');
+            keySpan.className = 'btree-key';
+            keySpan.id = `btree-key-${levelIndex}-${nodeIndex}-${keyIndex}`;
+            keySpan.textContent = key;
+            nodeDiv.appendChild(keySpan);
+          });
+          
+          levelDiv.appendChild(nodeDiv);
+        });
+        
+        container.appendChild(levelDiv);
+      });
+    }
+
+    // Reset visualization
+    function reset() {
+      document.querySelectorAll('.table-row').forEach(row => {
+        row.className = 'table-row';
+      });
+      document.querySelectorAll('.btree-node').forEach(node => {
+        node.className = 'btree-node';
+      });
+      document.querySelectorAll('.btree-key').forEach(key => {
+        key.className = 'btree-key';
+      });
+      
+      document.getElementById('scan-rows').textContent = '0';
+      document.getElementById('scan-io').textContent = '0';
+      document.getElementById('scan-time').textContent = '0ms';
+      document.getElementById('btree-nodes').textContent = '0';
+      document.getElementById('btree-io').textContent = '0';
+      document.getElementById('btree-time').textContent = '0ms';
+      document.getElementById('scan-result').textContent = '';
+      document.getElementById('scan-result').className = 'result';
+      document.getElementById('btree-result').textContent = '';
+      document.getElementById('btree-result').className = 'result';
+    }
+
+    // Delay helper
+    function delay(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    // Get animation delay based on speed
+    function getDelay() {
+      return Math.max(20, 200 - (animationSpeed * 18));
+    }
+
+    // Table scan animation
+    async function animateTableScan(target) {
+      let rowsScanned = 0;
+      let ioReads = 0;
+      const startTime = performance.now();
+      
+      for (let i = 1; i <= TABLE_SIZE; i++) {
+        if (!animationRunning) return;
+        
+        const row = document.getElementById(`row-${i}`);
+        row.className = 'table-row scanning';
+        rowsScanned++;
+        
+        if (i % ROWS_PER_IO === 1) {
+          ioReads++;
+          document.getElementById('scan-io').textContent = ioReads;
+        }
+        
+        document.getElementById('scan-rows').textContent = rowsScanned;
+        
+        await delay(getDelay());
+        
+        if (i === target) {
+          row.className = 'table-row found';
+          const elapsed = Math.round(performance.now() - startTime);
+          document.getElementById('scan-time').textContent = `${elapsed}ms`;
+          document.getElementById('scan-result').textContent = `✓ Found ID ${target} after scanning ${rowsScanned} rows`;
+          document.getElementById('scan-result').className = 'result found';
+          return;
+        } else {
+          row.className = 'table-row scanned';
+        }
+      }
+      
+      // Not found
+      const elapsed = Math.round(performance.now() - startTime);
+      document.getElementById('scan-time').textContent = `${elapsed}ms`;
+      document.getElementById('scan-result').textContent = `✗ ID ${target} not found after scanning all ${TABLE_SIZE} rows`;
+      document.getElementById('scan-result').className = 'result not-found';
+    }
+
+    // B-tree search animation
+    async function animateBTreeSearch(target) {
+      let nodesVisited = 0;
+      let ioReads = 0;
+      const startTime = performance.now();
+      
+      // Traverse the tree
+      const path = getBTreePath(target);
+      
+      for (const step of path) {
+        if (!animationRunning) return;
+        
+        const { level, nodeIndex, keyIndex, isMatch } = step;
+        const node = document.getElementById(`btree-node-${level}-${nodeIndex}`);
+        const key = document.getElementById(`btree-key-${level}-${nodeIndex}-${keyIndex}`);
+        
+        // Visiting animation
+        node.className = 'btree-node visiting';
+        if (key) key.className = 'btree-key highlight';
+        nodesVisited++;
+        ioReads++;
+        
+        document.getElementById('btree-nodes').textContent = nodesVisited;
+        document.getElementById('btree-io').textContent = ioReads;
+        
+        await delay(getDelay() * 3);
+        
+        if (isMatch) {
+          node.className = 'btree-node found';
+          if (key) key.className = 'btree-key match';
+          const elapsed = Math.round(performance.now() - startTime);
+          document.getElementById('btree-time').textContent = `${elapsed}ms`;
+          document.getElementById('btree-result').textContent = `✓ Found ID ${target} after visiting ${nodesVisited} nodes`;
+          document.getElementById('btree-result').className = 'result found';
+          return;
+        } else {
+          node.className = 'btree-node visited';
+          if (key) key.className = 'btree-key';
+        }
+      }
+      
+      // Not found
+      const elapsed = Math.round(performance.now() - startTime);
+      document.getElementById('btree-time').textContent = `${elapsed}ms`;
+      document.getElementById('btree-result').textContent = `✗ ID ${target} not found`;
+      document.getElementById('btree-result').className = 'result not-found';
+    }
+
+    // Get the path through B-tree for a given value
+    function getBTreePath(target) {
+      const path = [];
+      
+      // Level 0: root [50]
+      if (target <= 50) {
+        path.push({ level: 0, nodeIndex: 0, keyIndex: 0, isMatch: target === 50 });
+        if (target === 50) return path;
+        
+        // Level 1: [25]
+        path.push({ level: 1, nodeIndex: 0, keyIndex: 0, isMatch: target === 25 });
+        if (target === 25) return path;
+        
+        if (target <= 25) {
+          // Level 2: [12, 37] - check 12
+          path.push({ level: 2, nodeIndex: 0, keyIndex: 0, isMatch: target === 12 });
+          if (target === 12) return path;
+          
+          if (target <= 12) {
+            path.push({ level: 3, nodeIndex: 0, keyIndex: target <= 6 ? (target === 1 ? 0 : 1) : 2, isMatch: target >= 1 && target <= 12 });
+          } else {
+            path.push({ level: 3, nodeIndex: 1, keyIndex: target <= 25 ? 0 : 1, isMatch: target > 12 && target <= 25 });
+          }
+        } else {
+          // Level 2: [12, 37] - check 37
+          path.push({ level: 2, nodeIndex: 0, keyIndex: 1, isMatch: target === 37 });
+          if (target === 37) return path;
+          
+          path.push({ level: 3, nodeIndex: 2, keyIndex: target <= 43 ? 0 : 1, isMatch: target > 25 && target <= 50 });
+        }
+      } else {
+        path.push({ level: 0, nodeIndex: 0, keyIndex: 0, isMatch: false });
+        
+        // Level 1: [75]
+        path.push({ level: 1, nodeIndex: 1, keyIndex: 0, isMatch: target === 75 });
+        if (target === 75) return path;
+        
+        if (target <= 75) {
+          // Level 2: [62, 87] - check 62
+          path.push({ level: 2, nodeIndex: 1, keyIndex: 0, isMatch: target === 62 });
+          if (target === 62) return path;
+          
+          path.push({ level: 3, nodeIndex: 3, keyIndex: target <= 62 ? 0 : 1, isMatch: target > 50 && target <= 75 });
+        } else {
+          // Level 2: [62, 87] - check 87
+          path.push({ level: 2, nodeIndex: 1, keyIndex: 1, isMatch: target === 87 });
+          if (target === 87) return path;
+          
+          if (target <= 87) {
+            path.push({ level: 3, nodeIndex: 4, keyIndex: target <= 81 ? 0 : 1, isMatch: target > 75 && target <= 87 });
+          } else {
+            path.push({ level: 3, nodeIndex: 5, keyIndex: target <= 93 ? 0 : 1, isMatch: target > 87 && target <= 100 });
+          }
+        }
+      }
+      
+      return path;
+    }
+
+    // Main search function
+    async function search() {
+      if (animationRunning) return;
+      
+      searchValue = parseInt(document.getElementById('search-value').value) || 73;
+      if (searchValue < 1 || searchValue > 100) {
+        alert('Please enter a number between 1 and 100');
+        return;
+      }
+      
+      reset();
+      animationRunning = true;
+      
+      // Run both animations in parallel
+      await Promise.all([
+        animateTableScan(searchValue),
+        animateBTreeSearch(searchValue)
+      ]);
+      
+      animationRunning = false;
+    }
+
+    // Event listeners
+    document.getElementById('search-btn').addEventListener('click', search);
+    document.getElementById('reset-btn').addEventListener('click', () => {
+      animationRunning = false;
+      reset();
+    });
+    
+    document.getElementById('speed').addEventListener('input', (e) => {
+      animationSpeed = parseInt(e.target.value);
+      document.getElementById('speed-label').textContent = `${animationSpeed}x`;
+    });
+
+    document.getElementById('search-value').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') search();
+    });
+
+    // Initialize on load
+    initTable();
+    initBTree();
+  </script>
+</BaseLayout>

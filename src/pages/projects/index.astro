@@ -1,0 +1,119 @@
+---
+import ContactCTA from '../../components/ContactCTA.astro';
+import Hero from '../../components/Hero.astro';
+import Icon from '../../components/Icon.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+// Define your tools/apps here
+const tools = [
+	{
+		title: 'Tokenizer Playground',
+		description: 'Type text and watch it break into colorful tokens. Supports BPE and Unigram-style tokenization.',
+		href: '/projects/tokenizer',
+		tags: ['JavaScript', 'LLM', 'Interactive'],
+	},
+	{
+		title: 'DB Index Visualizer',
+		description: 'See how database indexes speed up queries. Watch a full table scan race against a B-tree index lookup.',
+		href: '/projects/db-index',
+		tags: ['JavaScript', 'Databases', 'System Design'],
+	},
+];
+---
+
+<BaseLayout
+	title="Tools | Ademola Arigbabuwo"
+	description="Lightweight webapps and tools I've built"
+>
+	<div class="stack gap-20">
+		<main class="wrapper stack gap-8">
+			<Hero
+				title="Tools & Apps"
+				tagline="Lightweight webapps I build for fun and learning."
+				align="start"
+			/>
+			
+			<section class="tools-grid">
+				{tools.map((tool) => (
+					<a href={tool.href} class="tool-card">
+						<h3>{tool.title}</h3>
+						<p>{tool.description}</p>
+						<div class="tags">
+							{tool.tags.map((tag) => (
+								<span class="tag">{tag}</span>
+							))}
+						</div>
+						<span class="try-it">
+							Try it <Icon icon="arrow-right" size="1em" />
+						</span>
+					</a>
+				))}
+			</section>
+		</main>
+		<ContactCTA />
+	</div>
+</BaseLayout>
+
+<style>
+	.tools-grid {
+		display: grid;
+		gap: 1.5rem;
+	}
+
+	.tool-card {
+		display: block;
+		background: var(--gradient-subtle);
+		border: 1px solid var(--gray-800);
+		border-radius: 1rem;
+		padding: 1.5rem;
+		text-decoration: none;
+		transition: box-shadow var(--theme-transition), transform var(--theme-transition);
+	}
+
+	.tool-card:hover {
+		box-shadow: var(--shadow-md);
+		transform: translateY(-2px);
+	}
+
+	.tool-card h3 {
+		font-size: var(--text-lg);
+		color: var(--gray-0);
+		margin: 0 0 0.5rem;
+	}
+
+	.tool-card p {
+		color: var(--gray-300);
+		font-size: var(--text-md);
+		margin: 0 0 1rem;
+	}
+
+	.tags {
+		display: flex;
+		gap: 0.5rem;
+		flex-wrap: wrap;
+		margin-bottom: 1rem;
+	}
+
+	.tag {
+		font-size: var(--text-sm);
+		padding: 0.25rem 0.75rem;
+		border-radius: 999rem;
+		background: var(--gray-800);
+		color: var(--gray-300);
+	}
+
+	.try-it {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.25rem;
+		color: var(--accent-regular);
+		font-weight: 500;
+		font-size: var(--text-sm);
+	}
+
+	@media (min-width: 50em) {
+		.tools-grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+</style>
