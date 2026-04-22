@@ -64,5 +64,3 @@ The blast radius grows with every new capability you give an agent. An agent tha
 ## Final thought
 
 Indirect prompt injection is what happens when you give an AI eyes, hands, and access to the internet — and forget that not everything it reads is friendly. The attack surface is no longer your chat interface. It's every webpage, document, and data source your AI agent will ever touch. In 2026, securing your AI means securing everything it reads.
-
-*Originally published on [LinkedIn](#)*
