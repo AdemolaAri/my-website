@@ -42,4 +42,28 @@ export const collections = {
 			tags: z.array(z.string()).optional(),
 		}),
 	}),
+	credentials: defineCollection({
+		loader: glob({ base: './src/content/credentials', pattern: '**/*.md' }),
+		schema: z.object({
+			title: z.string(),
+			issuer: z.string(),
+			category: z.enum([
+				'certification',
+				'ai-program',
+				'ambassador',
+				'platform-achievement',
+				'talk',
+				'course',
+			]),
+			date: z.coerce.date().optional(),
+			description: z.string().optional(),
+			credentialUrl: z.string().url().optional(),
+			image: z.string().optional(),
+			imageAlt: z.string().optional(),
+			featured: z.boolean().default(false),
+			source: z
+				.enum(['credly', 'github', 'kaggle', 'youtube', 'course', 'event', 'linkedin', 'other'])
+				.optional(),
+		}),
+	}),
 };
