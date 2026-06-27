@@ -1,0 +1,14 @@
+---
+import { getEntry } from 'astro:content';
+
+import WorkArticle from '../components/WorkArticle.astro';
+
+// Vanity URL: /calmquest renders the same post as /work/calmquest-scholars.
+const entry = await getEntry('work', 'calmquest-scholars');
+
+if (!entry) {
+	return Astro.redirect('/404');
+}
+---
+
+<WorkArticle entry={entry} />
