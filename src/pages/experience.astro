@@ -1,0 +1,25 @@
+---
+import WorkPulse from '../components/WorkPulse.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+	title="Professional Experience | Ademola Arigbabuwo"
+	description="My professional software engineering experience: contribution activity, shipping and review cadence, and selected projects across Java, Python, TypeScript, and cloud infrastructure."
+>
+	<main class="wrapper experience-page">
+		<WorkPulse title="Professional Experience" eyebrow="Current role" />
+	</main>
+</BaseLayout>
+
+<style>
+	.experience-page {
+		padding-block: 3rem 5rem;
+	}
+
+	@media (min-width: 50em) {
+		.experience-page {
+			padding-block: 5rem 7rem;
+		}
+	}
+</style>

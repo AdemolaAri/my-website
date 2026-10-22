@@ -1,0 +1,72 @@
+[
+  {
+    "title": "Video creative type with branded end card",
+    "period": "Sep to Oct",
+    "summary": "Led the design spike, then built a new creative type end to end: a short video followed by a branded end card, rendered on demand by an external service with nothing stored on our side. Shipped across a backend service, an API gateway, and the web app.",
+    "outcome": "3 services, 3 canvas sizes, auto-approval flow",
+    "stack": ["Java", "Spring Boot", "Spring WebFlux", "Angular", "MongoDB"]
+  },
+  {
+    "title": "Incident response and monitoring overhaul",
+    "period": "Jul to Oct",
+    "summary": "Audited every alert across the team's services, moved all monitors into Terraform, and built an on-call hub where each alert links to a runbook. Refined the escalation process and fixed the issues the audit surfaced.",
+    "outcome": "5 services audited, 12 runbooks",
+    "stack": ["Datadog", "Terraform", "OpenTofu"]
+  },
+  {
+    "title": "AI-assisted on-call",
+    "period": "Oct",
+    "summary": "Built a Claude Code skill on the Datadog MCP server so any engineer can investigate a firing alert and update its runbook from live log evidence, with a review step before anything is published.",
+    "outcome": "Tested on live staging alerts",
+    "stack": ["Claude Code", "MCP", "Datadog"]
+  },
+  {
+    "title": "Read-only access role",
+    "period": "Jun to Sep",
+    "summary": "Designed and shipped a new view-only role so users can browse content without edit rights, with the role enforced consistently across two services and both API versions.",
+    "outcome": "2 services, 2 API versions, contract tests per role",
+    "stack": ["Java", "Spring Security", "MongoDB", "Postman"]
+  },
+  {
+    "title": "Production reliability fixes",
+    "period": "Jul to Sep",
+    "summary": "Root-caused and fixed a message-bus startup race that blocked deploy health checks, a database migration that crash-looped staging, and video jobs killed by the wrong timeout. Added per-step timing metrics to the asset pipeline.",
+    "outcome": "3 deploy-blocking issues root-caused and fixed",
+    "stack": ["Java", "Azure Service Bus", "Cosmos DB", "Redis", "Datadog"]
+  },
+  {
+    "title": "Release engineering",
+    "period": "Aug to Oct",
+    "summary": "Built Prepare, Deploy, and Rollback release workflows that trigger production deploys for two more services, retired a legacy blue/green path, and fixed four bugs in the existing pipeline. Took ownership of backend production releases.",
+    "outcome": "4 services on one release model",
+    "stack": ["GitHub Actions", "Harness", "Helm"]
+  },
+  {
+    "title": "Keyword recommendations API",
+    "period": "Aug to Oct",
+    "summary": "Added a new versioned endpoint that returns richer recommendation data, without breaking the existing version. Modernized the service lifecycle and started a shared cache to fix recurring query timeouts.",
+    "outcome": "New API version shipped with zero changes for existing clients",
+    "stack": ["Python", "FastAPI", "PostgreSQL", "Redis"]
+  },
+  {
+    "title": "Infrastructure as code migration",
+    "period": "Apr to Aug",
+    "summary": "Migrated four infrastructure repos to Spacelift and OpenTofu, including a managed PostgreSQL module upgrade across every environment using state moves. Set up change data capture from a shared PostgreSQL server for analytics.",
+    "outcome": "No destructive changes across all environments",
+    "stack": ["Terraform", "OpenTofu", "Spacelift", "Azure"]
+  },
+  {
+    "title": "Analytics dashboard performance",
+    "period": "Jan to Mar",
+    "summary": "Made a reporting dashboard fetch only the datasets for the open tab and cache results between tabs, behind feature flags. Added browser logging for every report step and built new data views and filters.",
+    "outcome": "Loads only the open tab's data; every report step traced",
+    "stack": ["Angular", "TypeScript", "Datadog RUM"]
+  },
+  {
+    "title": "Feature flag library",
+    "period": "Jan to Apr",
+    "summary": "Built a reusable Python feature flag library for internal services and added a second flag provider to the main web app alongside the existing one.",
+    "outcome": "Released as a versioned 1.0 library with tests and docs",
+    "stack": ["Python", "TypeScript", "Harness FME"]
+  }
+]

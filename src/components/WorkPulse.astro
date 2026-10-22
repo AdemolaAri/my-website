@@ -1,0 +1,38 @@
+---
+// Drop-in Work Pulse widget for an Astro site.
+// Copy this folder's files into your site:
+//   src/components/WorkPulse.astro   (this file)
+//   src/components/pulse.js          (from work-pulse/src/pulse.js)
+//   src/styles/pulse.css             (from work-pulse/src/pulse.css)
+//   src/data/activity.json           (from work-pulse/public/activity.json)
+//   src/data/projects.json           (from work-pulse/public/projects.json)
+// Then use it on any page: <WorkPulse />
+import "../styles/pulse.css";
+import activity from "../data/activity.json";
+import projects from "../data/projects.json";
+
+interface Props {
+  title?: string;
+  intro?: string;
+  eyebrow?: string;
+  heat?: "blue" | "green" | "teal" | "violet" | "amber";
+}
+const { title, intro, eyebrow, heat } = Astro.props;
+---
+
+<div id="work-pulse" data-title={title} data-intro={intro} data-eyebrow={eyebrow} data-heat={heat}></div>
+<script type="application/json" id="work-pulse-activity" set:html={JSON.stringify(activity).replace(/</g, "\\u003c")} />
+<script type="application/json" id="work-pulse-projects" set:html={JSON.stringify(projects).replace(/</g, "\\u003c")} />
+
+<script>
+  import { renderPulse } from "./pulse.js";
+  const root = document.getElementById("work-pulse");
+  const read = (id) => JSON.parse(document.getElementById(id)?.textContent || "null");
+  if (root) {
+    renderPulse(root, read("work-pulse-activity"), read("work-pulse-projects"), {
+      title: root.dataset.title || undefined,
+      intro: root.dataset.intro || undefined,
+      eyebrow: root.dataset.eyebrow || undefined,
+    });
+  }
+</script>
