@@ -1,5 +1,7 @@
 ---
+import CallToAction from '../components/CallToAction.astro';
 import ContactCTA from '../components/ContactCTA.astro';
+import Icon from '../components/Icon.astro';
 import WorkPulse from '../components/WorkPulse.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
@@ -16,6 +18,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 				intro="I lead the engineering work on the tools advertisers use to create assets for their campaigns on a retail media advertising platform. I lead features from design spike to production and work across the stack: Java and Python services, Angular front ends, cloud infrastructure, release pipelines, and incident response. Lately that includes building AI-assisted tooling that helps engineers investigate alerts and keep runbooks current."
 				note="My work lives in private company repositories, so these are totals and hand-written summaries with company details removed."
 			/>
+			<div class="resume-cta">
+				<CallToAction href="/resume/">
+					View my full resume
+					<Icon icon="arrow-right" size="1.2em" />
+				</CallToAction>
+			</div>
 		</main>
 
 		<ContactCTA />
@@ -23,6 +31,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 </BaseLayout>
 
 <style>
+	/* Same 44rem centered column as the widget, so the button lines up with the cards above. */
+	.resume-cta {
+		max-width: 44rem;
+		margin: 2.5rem auto 0;
+	}
+
 	.experience-page {
 		padding-block: 3rem 0;
 	}
