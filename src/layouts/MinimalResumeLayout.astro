@@ -1,0 +1,92 @@
+---
+// Fully isolated layout for resume pages.
+// Intentionally does NOT import the global navbar, footer, or site styles.
+
+interface Props {
+	title: string;
+	description: string;
+	/** Application-specific pages stay out of search; the main resume is indexable. */
+	noindex?: boolean;
+}
+
+const { title, description, noindex = true } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="generator" content={Astro.generator} />
+		{noindex && <meta name="robots" content="noindex,nofollow" />}
+		<meta name="description" content={description} />
+		<title>{title}</title>
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Inter:wght@400;500;600&display=swap"
+			rel="stylesheet"
+		/>
+		<slot name="head" />
+	</head>
+	<body>
+		<main>
+			<slot />
+		</main>
+
+		<style is:global>
+			:root {
+				--ink: #1a1a1a;
+				--ink-soft: #4a4a47;
+				--ink-faint: #8a8a85;
+				--rule: #e6e4df;
+				--accent: #b8593c;
+				--bg: #fbfaf8;
+			}
+
+			* {
+				box-sizing: border-box;
+			}
+
+			html {
+				-webkit-text-size-adjust: 100%;
+			}
+
+			body {
+				margin: 0;
+				background: var(--bg);
+				color: var(--ink);
+				font-family: 'Inter', system-ui, -apple-system, sans-serif;
+				font-size: 18px;
+				line-height: 1.7;
+				-webkit-font-smoothing: antialiased;
+				text-rendering: optimizeLegibility;
+			}
+
+			.prepared-note {
+				display: block;
+				max-width: 780px;
+				margin: 0 auto;
+				padding: 1.5rem 1.5rem 0;
+				text-align: right;
+				font-size: 0.78rem;
+				letter-spacing: 0.04em;
+				text-transform: uppercase;
+				color: var(--ink-faint);
+			}
+
+			main {
+				max-width: 780px;
+				margin: 0 auto;
+				padding: 2.5rem 1.5rem 6rem;
+			}
+
+			@media (min-width: 50em) {
+				main {
+					padding-top: 3.5rem;
+				}
+			}
+		</style>
+	</body>
+</html>

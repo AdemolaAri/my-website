@@ -1,0 +1,525 @@
+---
+import MinimalResumeLayout from '../../layouts/MinimalResumeLayout.astro';
+
+// Public page and PDF: describe 84.51° work at the same level of detail as /experience.
+// No internal system names, ticket numbers, or security findings. No phone or email.
+
+const contact = [
+	{ label: 'Chicago, IL' },
+	{ label: 'adeinmyworld.com', href: 'https://adeinmyworld.com' },
+	{ label: 'LinkedIn/ademolabuwo', href: 'https://www.linkedin.com/in/ademolabuwo' },
+	{ label: 'GitHub/AdemolaAri', href: 'https://github.com/AdemolaAri' },
+];
+
+type Position = { title: string; dates: string; bullets: string[] };
+type Job = { company: string; location: string; dates: string; positions: Position[] };
+
+const jobs: Job[] = [
+	{
+		company: '84.51° (Kroger Precision Marketing)',
+		location: 'Chicago, IL',
+		dates: 'January 2023 – Present',
+		positions: [
+			{
+				title: 'Senior Software Engineer',
+				dates: 'May 2024 – Present',
+				bullets: [
+					'Led the design spike and end-to-end build of a new video creative type with a branded end card across a Spring Boot service, a WebFlux API gateway, and the Angular web app, including on-demand MP4 export, three canvas sizes, and an auto-approval flow.',
+					'Took ownership of backend production releases: built Prepare, Deploy, and Rollback workflows for two more services, retired a legacy blue/green path, and fixed four bugs in the existing pipeline, putting four services on one release model.',
+					"Overhauled the team's incident response: audited alerting across five services, moved every monitor into Terraform, built an on-call hub of 12 runbooks tied to those monitors, and refined escalation.",
+					'Built a Claude Code skill on the Datadog MCP server that lets any engineer investigate a firing alert and update its runbook from live log evidence; prototyped a Jira MCP server and an AI reviewer agent that scores monitor quality for noise, coverage, and actionability.',
+					'Designed and shipped a view-only access role enforced across two services and both API versions, with contract tests for each role.',
+					'Root-caused and fixed production issues including a message-bus startup race that blocked deploy health checks, a database migration that crash-looped staging, and video jobs killed by the wrong timeout; added per-step timing metrics to the asset pipeline.',
+					'Shipped a new versioned keyword recommendations endpoint in a Python FastAPI service with zero changes for existing clients, and migrated four infrastructure repositories to Spacelift and OpenTofu with no destructive changes.',
+					'Embedded with the reporting team to speed up an analytics dashboard by loading only the open tab’s data with caching, and added browser tracing for every report step.',
+					'Reviewed 138 pull requests across 20+ repositories in 2026, against 106 of my own merged.',
+				],
+			},
+			{
+				title: 'Software Engineer',
+				dates: 'January 2023 – May 2024',
+				bullets: [
+					'Built and maintained FastAPI services powering core platform APIs, plus background workers on Azure Service Bus and RabbitMQ queues and topics.',
+					'Designed a MongoDB change data capture service on change streams and Azure Service Bus, using distributed locking and idempotent processing to prevent duplicate work.',
+					'Helped migrate services from PCF and on-prem infrastructure to Azure Kubernetes Service, and standardized shared Terraform modules, Azure PostgreSQL, and Key Vault integration.',
+					'Built Angular features with NgRx and RxJS in an Nx monorepo, including config-driven UI that renders forms and workflows from structured configuration.',
+				],
+			},
+		],
+	},
+	{
+		company: 'Aetna/HDMS, a CVS Health Company',
+		location: 'Chicago, IL',
+		dates: 'August 2020 – January 2023',
+		positions: [
+			{
+				title: 'Software Engineer',
+				dates: '',
+				bullets: [
+					'Worked in an agile setup that accelerated a software rebuild project by 20%.',
+					'Maintained and refactored legacy code, reducing system downtime by 15%.',
+					'Resolved 90% of production issues within the same business day through independent troubleshooting.',
+					'Kept a 99% defect-free codebase through code reviews, unit testing, and mentoring.',
+					'Built APIs and backend improvements that cut server-side response times.',
+				],
+			},
+		],
+	},
+	{
+		company: 'National Opinion Research Center (NORC)',
+		location: 'Chicago, IL',
+		dates: 'December 2019 – August 2020',
+		positions: [
+			{
+				title: 'Data Analyst',
+				dates: '',
+				bullets: [
+					'Cut data delivery time from one month to two weeks through automation pipelines.',
+					'Ran 10+ experiments that improved recruitment, communication, and loyalty metrics by 12% on average.',
+					'Automated data cleaning, saving 40+ hours of work per month.',
+					'Analyzed complex datasets in Python, R, and SQL to deliver recommendations to stakeholders.',
+				],
+			},
+		],
+	},
+];
+
+const leadership = [
+	'Mentored 4 interns and 6 junior engineers; 80% were promoted to mid-level within 18 months.',
+	'Led onboarding and technical ramp-up for 15+ new team members.',
+	'Represented engineering at recruiting events, helping hire 10+ engineers.',
+];
+
+const education = [
+	{
+		school: 'University of Illinois Chicago',
+		location: 'Chicago, IL',
+		degree: 'Master of Science, Business Analytics',
+		note: 'Data Science | Machine Learning | Artificial Intelligence',
+	},
+	{
+		school: 'Western Illinois University',
+		location: 'Macomb, IL',
+		degree: 'Master of Arts, Economics',
+		note: 'Post-Baccalaureate Certificate, Business Analytics',
+	},
+	{
+		school: 'University of Lagos',
+		location: 'Lagos, Nigeria',
+		degree: 'Bachelor of Science, Actuarial Science & Insurance',
+		note: '',
+	},
+];
+
+const skills = [
+	{ group: 'Languages', items: ['Java', 'Python', 'TypeScript', 'Go', 'SQL'] },
+	{ group: 'Back-End', items: ['Spring Boot', 'Spring WebFlux', 'FastAPI', 'MongoDB', 'PostgreSQL', 'Cosmos DB', 'Redis', 'Azure Service Bus', 'RabbitMQ'] },
+	{ group: 'Front-End', items: ['Angular', 'Nx', 'NgRx', 'RxJS'] },
+	{ group: 'Cloud & Infra', items: ['Azure', 'AKS', 'Kubernetes', 'Terraform', 'OpenTofu', 'Spacelift', 'Docker', 'Helm', 'GitHub Actions', 'Harness'] },
+	{ group: 'Observability', items: ['Datadog', 'Monitoring', 'Logging', 'Alerting', 'Distributed Tracing'] },
+	{ group: 'AI & Tooling', items: ['Claude Code', 'MCP Servers', 'OpenAI APIs', 'Google ADK'] },
+	{ group: 'Testing', items: ['Jest', 'Playwright', 'Postman'] },
+];
+
+const certifications = [
+	'AWS Fundamentals Certificate',
+	'DeepLearning.AI TensorFlow Developer Certificate',
+	'Google IT Automation with Python Professional Certificate',
+	'Meta Global Hackathon Winner',
+];
+---
+
+<MinimalResumeLayout
+	title="Resume | Ademola Arigbabuwo"
+	description="Resume of Ademola Arigbabuwo, senior software engineer leading features end to end across Java and Python services, Angular, cloud infrastructure, and incident response."
+	noindex={false}
+>
+	<Fragment slot="head">
+		<link
+			href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"
+			rel="stylesheet"
+		/>
+	</Fragment>
+
+	<div class="toolbar" aria-label="Resume actions">
+		<a class="back" href="/">← adeinmyworld.com</a>
+		<a class="download" href="/resume.pdf" download="Ademola-Arigbabuwo-Resume.pdf">Download PDF</a>
+	</div>
+
+	<article class="resume">
+		<header class="masthead">
+			<h1>Ademola Arigbabuwo</h1>
+			<p class="contact">
+				{
+					contact.map((c, i) => (
+						<>
+							{i > 0 && <span class="sep" aria-hidden="true">|</span>}
+							{c.href ? <a href={c.href}>{c.label}</a> : <span>{c.label}</span>}
+						</>
+					))
+				}
+			</p>
+		</header>
+
+		<section>
+			<h2>Summary</h2>
+			<p>
+				Senior software engineer who leads features end to end on a retail media advertising platform,
+				from design spike to production. I work across Java and Python services, Angular front ends,
+				cloud infrastructure, release pipelines, and incident response, and I build AI-assisted tooling
+				that makes on-call faster and better documented.
+			</p>
+		</section>
+
+		<section>
+			<h2>Experience</h2>
+			{
+				jobs.map((job) => {
+					const single = job.positions.length === 1;
+					return (
+						<div class="job">
+							<div class="row company">
+								<h3>
+									{job.company}
+									{single && <> | {job.positions[0].title}</>} | {job.location}
+								</h3>
+								<span class="dates">{job.dates}</span>
+							</div>
+							{job.positions.map((p) => (
+								<div class="position">
+									{!single && (
+										<h4>
+											{p.title} | {p.dates}
+										</h4>
+									)}
+									<ul>{p.bullets.map((b) => <li>{b}</li>)}</ul>
+								</div>
+							))}
+						</div>
+					);
+				})
+			}
+		</section>
+
+		<section>
+			<h2>Leadership &amp; Impact</h2>
+			<ul>{leadership.map((b) => <li>{b}</li>)}</ul>
+		</section>
+
+		<section>
+			<h2>Education</h2>
+			{
+				education.map((e) => (
+					<div class="school">
+						<h3>
+							{e.school} | {e.location}
+						</h3>
+						<p>
+							<em>{e.degree}</em>
+							{e.note && <> [{e.note}]</>}
+						</p>
+					</div>
+				))
+			}
+		</section>
+
+		<section>
+			<h2>Top Skills</h2>
+			<dl class="skills">
+				{
+					skills.map((s) => (
+						<div>
+							<dt>{s.group}:</dt>
+							<dd>{s.items.join(' | ')}</dd>
+						</div>
+					))
+				}
+			</dl>
+		</section>
+
+		<section>
+			<h2>Certifications &amp; Awards</h2>
+			<ul class="plain">{certifications.map((c) => <li>{c}</li>)}</ul>
+		</section>
+	</article>
+</MinimalResumeLayout>
+
+<style>
+	.toolbar {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 1rem;
+		margin-bottom: 2rem;
+		font-size: 0.9rem;
+	}
+
+	.toolbar a {
+		color: var(--ink-soft);
+		text-decoration: none;
+	}
+
+	.toolbar .download {
+		color: #fff;
+		background: var(--ink);
+		border-radius: 999px;
+		padding: 0.5rem 1.1rem;
+		font-weight: 500;
+	}
+
+	.toolbar .download:hover,
+	.toolbar .download:focus-visible {
+		background: #333;
+	}
+
+	/* Classic serif resume: centered name over a rule, bold uppercase section heads, dates on the right. */
+	.resume {
+		--serif: 'EB Garamond', Garamond, 'Times New Roman', serif;
+		font-family: var(--serif);
+		font-size: 1.12rem;
+		line-height: 1.4;
+		color: #111;
+		background: #fff;
+		padding: 2.5rem 2.75rem;
+		border: 1px solid var(--rule);
+		border-radius: 4px;
+		box-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 8px 24px rgb(0 0 0 / 0.05);
+	}
+
+	.masthead {
+		text-align: center;
+		padding-bottom: 0.9rem;
+		border-bottom: 1.5px solid #111;
+		margin-bottom: 1.2rem;
+	}
+
+	h1 {
+		font-family: var(--serif);
+		font-weight: 700;
+		font-size: 2.6rem;
+		line-height: 1.1;
+		margin: 0 0 0.3rem;
+	}
+
+	.contact {
+		margin: 0;
+		font-size: 1rem;
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		white-space: nowrap;
+	}
+
+	.contact a {
+		color: inherit;
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+
+	.sep {
+		margin: 0 0.4rem;
+		color: #555;
+	}
+
+	section {
+		margin-bottom: 1.1rem;
+	}
+
+	h2 {
+		font-family: var(--serif);
+		font-weight: 700;
+		font-size: 1.2rem;
+		text-transform: uppercase;
+		letter-spacing: 0.03em;
+		margin: 0 0 0.4rem;
+	}
+
+	h3 {
+		font-family: var(--serif);
+		font-weight: 700;
+		font-size: 1.08rem;
+		margin: 0;
+	}
+
+	h4 {
+		font-family: var(--serif);
+		font-weight: 600;
+		font-size: 1.05rem;
+		margin: 0.35rem 0 0.15rem 0.75rem;
+	}
+
+	p {
+		margin: 0;
+		color: #111;
+	}
+
+	.row {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		align-items: baseline;
+		gap: 0 1rem;
+	}
+
+	.dates {
+		font-weight: 700;
+		white-space: nowrap;
+	}
+
+	.job + .job {
+		margin-top: 0.75rem;
+	}
+
+	ul {
+		margin: 0.15rem 0 0;
+		padding-left: 2.1rem;
+	}
+
+	li {
+		margin-bottom: 0.12rem;
+		color: #111;
+	}
+
+	li::marker {
+		font-size: 0.8em;
+	}
+
+	ul.plain {
+		list-style: none;
+		padding-left: 0.75rem;
+	}
+
+	.school {
+		margin-bottom: 0.3rem;
+	}
+
+	.school p {
+		padding-left: 0.75rem;
+	}
+
+	.skills {
+		margin: 0;
+		padding-left: 0.75rem;
+	}
+
+	/* Inline so a long list wraps under itself instead of dropping below its label. */
+	.skills dt,
+	.skills dd {
+		display: inline;
+	}
+
+	.skills dt {
+		font-weight: 700;
+		margin-right: 0.3rem;
+	}
+
+	.skills dd {
+		margin: 0;
+	}
+
+	@media (max-width: 34em) {
+		.resume {
+			padding: 1.5rem 1.1rem;
+			font-size: 1.05rem;
+		}
+
+		h1 {
+			font-size: 2rem;
+		}
+
+		/* Separators would strand at line starts once the line wraps; use spacing instead. */
+		.sep {
+			display: none;
+		}
+
+		.contact {
+			gap: 0.15rem 1rem;
+		}
+
+		ul {
+			padding-left: 1.2rem;
+		}
+	}
+
+	/* Print and PDF: US Letter, no card chrome, compact type. */
+	@media print {
+		@page {
+			size: Letter;
+			margin: 0.5in 0.55in;
+		}
+
+		:global(body) {
+			background: #fff;
+		}
+
+		:global(main) {
+			max-width: none;
+			padding: 0;
+		}
+
+		.toolbar {
+			display: none;
+		}
+
+		.resume {
+			font-size: 10.6pt;
+			line-height: 1.28;
+			padding: 0;
+			border: 0;
+			box-shadow: none;
+		}
+
+		h1 {
+			font-size: 25pt;
+		}
+
+		.contact {
+			font-size: 10pt;
+		}
+
+		.masthead {
+			margin-bottom: 9pt;
+			padding-bottom: 7pt;
+		}
+
+		section {
+			margin-bottom: 8pt;
+		}
+
+		h2 {
+			font-size: 12pt;
+			margin-bottom: 3pt;
+		}
+
+		h3 {
+			font-size: 10.8pt;
+		}
+
+		h4 {
+			font-size: 10.6pt;
+		}
+
+		.job + .job {
+			margin-top: 6pt;
+		}
+
+		li {
+			margin-bottom: 1pt;
+		}
+
+		li,
+		.school,
+		.skills div,
+		/* Earlier, shorter jobs move to the next page whole rather than splitting from their heading. */
+		.job + .job {
+			break-inside: avoid;
+		}
+
+		h2,
+		h3,
+		h4,
+		.row {
+			break-after: avoid;
+		}
+	}
+</style>

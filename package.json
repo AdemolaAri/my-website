@@ -6,6 +6,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
+    "resume:pdf": "astro build && node scripts/resume-pdf.mjs",
     "astro": "astro"
   },
   "dependencies": {
