@@ -1,25 +1,35 @@
 ---
+import ContactCTA from '../components/ContactCTA.astro';
 import WorkPulse from '../components/WorkPulse.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout
 	title="Professional Experience | Ademola Arigbabuwo"
-	description="My professional software engineering experience: contribution activity, shipping and review cadence, and selected projects across Java, Python, TypeScript, and cloud infrastructure."
+	description="Leading engineering work end to end on a retail media advertising platform: features from design to production, production releases, and incident response across Java, Python, Angular, and cloud infrastructure."
 >
-	<main class="wrapper experience-page">
-		<WorkPulse title="Professional Experience" eyebrow="Current role" />
-	</main>
+	<div class="stack gap-20">
+		<main class="wrapper experience-page">
+			<WorkPulse
+				title="Professional Experience"
+				eyebrow="Current role"
+				intro="I lead the engineering work on the tools advertisers use to create assets for their campaigns on a retail media advertising platform. I lead features from design spike to production and work across the stack: Java and Python services, Angular front ends, cloud infrastructure, release pipelines, and incident response. Lately that includes building AI-assisted tooling that helps engineers investigate alerts and keep runbooks current."
+				note="My work lives in private company repositories, so these are totals and hand-written summaries with company details removed."
+			/>
+		</main>
+
+		<ContactCTA />
+	</div>
 </BaseLayout>
 
 <style>
 	.experience-page {
-		padding-block: 3rem 5rem;
+		padding-block: 3rem 0;
 	}
 
 	@media (min-width: 50em) {
 		.experience-page {
-			padding-block: 5rem 7rem;
+			padding-block: 5rem 0;
 		}
 	}
 </style>

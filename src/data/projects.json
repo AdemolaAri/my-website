@@ -7,6 +7,13 @@
     "stack": ["Java", "Spring Boot", "Spring WebFlux", "Angular", "MongoDB"]
   },
   {
+    "title": "Release engineering",
+    "period": "Aug to Oct",
+    "summary": "Built Prepare, Deploy, and Rollback release workflows that trigger production deploys for two more services, retired a legacy blue/green path, and fixed four bugs in the existing pipeline. Took ownership of backend production releases.",
+    "outcome": "4 services on one release model",
+    "stack": ["GitHub Actions", "Harness", "Helm"]
+  },
+  {
     "title": "Incident response and monitoring overhaul",
     "period": "Jul to Oct",
     "summary": "Audited every alert across the team's services, moved all monitors into Terraform, and built an on-call hub where each alert links to a runbook. Refined the escalation process and fixed the issues the audit surfaced.",
@@ -18,7 +25,8 @@
     "period": "Oct",
     "summary": "Built a Claude Code skill on the Datadog MCP server so any engineer can investigate a firing alert and update its runbook from live log evidence, with a review step before anything is published.",
     "outcome": "Tested on live staging alerts",
-    "stack": ["Claude Code", "MCP", "Datadog"]
+    "stack": ["Claude Code", "MCP", "Datadog"],
+    "link": {"href": "/work/why-mcp-server/", "label": "Why MCP servers matter"}
   },
   {
     "title": "Read-only access role",
@@ -28,25 +36,18 @@
     "stack": ["Java", "Spring Security", "MongoDB", "Postman"]
   },
   {
-    "title": "Production reliability fixes",
-    "period": "Jul to Sep",
-    "summary": "Root-caused and fixed a message-bus startup race that blocked deploy health checks, a database migration that crash-looped staging, and video jobs killed by the wrong timeout. Added per-step timing metrics to the asset pipeline.",
-    "outcome": "3 deploy-blocking issues root-caused and fixed",
-    "stack": ["Java", "Azure Service Bus", "Cosmos DB", "Redis", "Datadog"]
-  },
-  {
-    "title": "Release engineering",
-    "period": "Aug to Oct",
-    "summary": "Built Prepare, Deploy, and Rollback release workflows that trigger production deploys for two more services, retired a legacy blue/green path, and fixed four bugs in the existing pipeline. Took ownership of backend production releases.",
-    "outcome": "4 services on one release model",
-    "stack": ["GitHub Actions", "Harness", "Helm"]
-  },
-  {
     "title": "Keyword recommendations API",
     "period": "Aug to Oct",
     "summary": "Added a new versioned endpoint that returns richer recommendation data, without breaking the existing version. Modernized the service lifecycle and started a shared cache to fix recurring query timeouts.",
     "outcome": "New API version shipped with zero changes for existing clients",
     "stack": ["Python", "FastAPI", "PostgreSQL", "Redis"]
+  },
+  {
+    "title": "Production reliability fixes",
+    "period": "Jul to Sep",
+    "summary": "Root-caused and fixed a message-bus startup race that blocked deploy health checks, a database migration that crash-looped staging, and video jobs killed by the wrong timeout. Added per-step timing metrics to the asset pipeline.",
+    "outcome": "3 deploy-blocking issues root-caused and fixed",
+    "stack": ["Java", "Azure Service Bus", "Cosmos DB", "Redis", "Datadog"]
   },
   {
     "title": "Infrastructure as code migration",

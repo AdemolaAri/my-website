@@ -37,6 +37,12 @@ const projects = (await getCollection('work'))
 						<Pill><Icon icon="microphone-stage" size="1.33em" /> Speaker</Pill>
 						<Pill><Icon icon="pencil-line" size="1.33em" /> Writer</Pill>
 					</div>
+					<div class="hero-cta">
+						<CallToAction href="/experience/">
+							See my current professional experience
+							<Icon icon="arrow-right" size="1.2em" />
+						</CallToAction>
+					</div>
 				</Hero>
 
 				<img
@@ -114,6 +120,23 @@ const projects = (await getCollection('work'))
 
 	.roles {
 		display: none;
+	}
+
+	.hero-cta {
+		margin-top: 0.5rem;
+	}
+
+	/* The button label is long, so let it wrap instead of running off narrow screens. */
+	.hero-cta :global(a) {
+		max-width: 100%;
+		white-space: normal;
+	}
+
+	@media (max-width: 30em) {
+		.hero-cta :global(a) {
+			font-size: var(--text-base);
+			padding-inline: 1.25em;
+		}
 	}
 
 	.hero img {

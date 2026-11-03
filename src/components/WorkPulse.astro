@@ -15,12 +15,12 @@ interface Props {
   title?: string;
   intro?: string;
   eyebrow?: string;
-  heat?: "blue" | "green" | "teal" | "violet" | "amber";
+  note?: string;
 }
-const { title, intro, eyebrow, heat } = Astro.props;
+const { title, intro, eyebrow, note } = Astro.props;
 ---
 
-<div id="work-pulse" data-title={title} data-intro={intro} data-eyebrow={eyebrow} data-heat={heat}></div>
+<div id="work-pulse" data-title={title} data-intro={intro} data-eyebrow={eyebrow} data-note={note}></div>
 <script type="application/json" id="work-pulse-activity" set:html={JSON.stringify(activity).replace(/</g, "\\u003c")} />
 <script type="application/json" id="work-pulse-projects" set:html={JSON.stringify(projects).replace(/</g, "\\u003c")} />
 
@@ -33,6 +33,7 @@ const { title, intro, eyebrow, heat } = Astro.props;
       title: root.dataset.title || undefined,
       intro: root.dataset.intro || undefined,
       eyebrow: root.dataset.eyebrow || undefined,
+      note: root.dataset.note || undefined,
     });
   }
 </script>
